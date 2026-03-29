@@ -17,7 +17,6 @@ export default function LeadManagementSystem() {
   const [password, setPassword] = useState('')
   const [selectedClientId, setSelectedClientId] = useState<Record<string, string>>({})
 
-  // 신규 리드 추가를 위한 입력 상태
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newMemo, setNewMemo] = useState('')
@@ -28,16 +27,23 @@ export default function LeadManagementSystem() {
       setIsAdmin(true)
       return
     }
+    // error 변수 미사용 에러 방지를 위해 data만 추출
     const { data } = await supabase.from('clients').select('*').eq('login_id', loginId).eq('password', password).single()
-    if (data) { setUser(data); setIsAdmin(false); } 
-    else { alert('인증 실패'); }
+    if (data) { 
+      setUser(data)
+      setIsAdmin(false) 
+    } else { 
+      alert('인증 실패') 
+    }
   }
 
   const fetchData = async () => {
     if (!user) return
     let query = supabase.from('leads').select('*, lead_logs(*)').order('created_at', { ascending: false })
     if (!isAdmin) query = query.eq('client_id', user.id)
+    
     const { data: leadsData } = await query
+    
     if (isAdmin) {
       const { data: clientsData } = await supabase.from('clients').select('*')
       setClients(clientsData || [])
@@ -47,11 +53,9 @@ export default function LeadManagementSystem() {
 
   useEffect(() => { fetchData() }, [user])
 
-  // 어드민 전용: 수동 리드 추가 함수
   const handleAddLead = async () => {
     if (!newName || !newPhone) return alert('이름과 연락처는 필수입니다.')
     
-    // 아까 만든 /api/leads를 통해 저장하면 텔레그램 알림까지 동시에 갑니다!
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -105,31 +109,29 @@ export default function LeadManagementSystem() {
       <main className="p-8 max-w-[1200px] mx-auto">
         <h1 className="text-3xl font-light mb-8">{isAdmin ? 'Admin Control Center' : `Workspace: ${user.client_name}`}</h1>
 
-        {/* --- 어드민 전용: 리드 직접 추가 섹션 --- */}
         {isAdmin && (
           <div className="bg-white p-8 mb-8 border border-[#e0e0e0] shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-widest text-[#0f62fe] mb-6">➕ Create New Lead (Manual)</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <label className="text-[11px] text-[#525252] block mb-2 font-bold">CUSTOMER NAME</label>
-                <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm focus:border-[#0f62fe] outline-none" placeholder="Ex: 홍길동" />
+                <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="Ex: 홍길동" />
               </div>
               <div>
                 <label className="text-[11px] text-[#525252] block mb-2 font-bold">PHONE NUMBER</label>
-                <input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm focus:border-[#0f62fe] outline-none" placeholder="010-0000-0000" />
+                <input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="010-0000-0000" />
               </div>
               <div>
                 <label className="text-[11px] text-[#525252] block mb-2 font-bold">INITIAL MEMO</label>
-                <input value={newMemo} onChange={e => setNewMemo(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm focus:border-[#0f62fe] outline-none" placeholder="Any details..." />
+                <input value={newMemo} onChange={e => setNewMemo(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="Any details..." />
               </div>
-              <button onClick={handleAddLead} className="bg-[#0f62fe] text-white p-2.5 text-sm font-bold hover:bg-[#0353e9] transition shadow-md">
+              <button onClick={handleAddLead} className="bg-[#0f62fe] text-white p-2.5 text-sm font-bold hover:bg-[#0353e9] transition">
                 Register Lead
               </button>
             </div>
           </div>
         )}
 
-        {/* 리드 리스트 */}
         <div className="space-y-[1px] bg-[#e0e0e0] border border-[#e0e0e0]">
           {leads.map((lead) => (
             <div key={lead.id} className="bg-white p-0 flex flex-col md:flex-row hover:bg-[#fbfbfb] transition">
@@ -165,7 +167,7 @@ export default function LeadManagementSystem() {
                         <option value="">Select Client</option>
                         {clients.map(c => <option key={c.id} value={c.id}>{c.client_name}</option>)}
                       </select>
-                      <button onClick={() => assignLead(lead.id)} className="bg-[#161616] text-white px-4 py-2 text-xs font-bold hover:bg-black transition">Confirm</button>
+                      <button onClick={() => assignLead(lead.id)} className="bg-[#161616] text-white px-4 py-2 text-xs font-bold hover:bg-black">Confirm</button>
                     </div>
                   </div>
                 ) : (
@@ -181,7 +183,7 @@ export default function LeadManagementSystem() {
                         addLog(lead.id, s, m);
                         (document.getElementById(`mm-${lead.id}`) as any).value = ''
                       }}
-                      className="w-full bg-[#0f62fe] text-white p-2 text-sm font-bold hover:bg-[#0353e9]"
+                      className="w-full bg-[#0f62fe] text-white p-2 text-sm font-bold"
                     >Save Record</button>
                   </div>
                 )}
