@@ -76,80 +76,137 @@ export default function LeadManagementSystem() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f4f4f4]">
         <div className="bg-white p-10 w-full max-w-md border-t-4 border-[#0f62fe] shadow-sm">
-          <h1 className="text-2xl font-light mb-8 italic">Leads Management<span className="font-bold">CRM Login</span></h1>
+          <h1 className="text-2xl font-light mb-8 italic">Leads Management <span className="font-bold text-[#0f62fe]">Login</span></h1>
           <input className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-3 mb-4 outline-none" placeholder="ID" onChange={e => setLoginId(e.target.value)} />
           <input className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-3 mb-8 outline-none" type="password" placeholder="PW" onChange={e => setPassword(e.target.value)} />
-          <button className="w-full bg-[#0f62fe] text-white p-4 font-bold" onClick={handleLogin}>Log in</button>
+          <button className="w-full bg-[#0f62fe] text-white p-4 font-bold hover:bg-[#0353e9] transition" onClick={handleLogin}>Log in</button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f4f4] text-[#161616]">
+    <div className="min-h-screen bg-[#f4f4f4] text-[#161616] font-sans">
       <header className="h-12 bg-[#161616] text-white flex items-center justify-between px-6 sticky top-0 z-50">
-        <span className="font-bold tracking-tighter"> Noname Lead Management System</span>
-        <button onClick={() => setUser(null)} className="text-xs text-[#c6c6c6]">Logout</button>
+        <span className="font-bold tracking-tighter">Noname Lead Management System</span>
+        <button onClick={() => setUser(null)} className="text-xs text-[#c6c6c6] hover:text-white transition">Logout</button>
       </header>
 
       <main className="p-8 max-w-[1200px] mx-auto">
-        <h1 className="text-3xl font-light mb-8">{isAdmin ? 'Admin Center' : 'Dashboard'}</h1>
+        <div className="flex justify-between items-end mb-8">
+            <div>
+                <h1 className="text-3xl font-light">{isAdmin ? 'Admin Control Center' : `Workspace: ${user.client_name}`}</h1>
+                <p className="text-xs text-slate-400 mt-1">{isAdmin ? '시스템 전체 리드를 관리합니다.' : '배정된 리드와 상담 현황을 확인하세요.'}</p>
+            </div>
+        </div>
 
+        {/* --- 요약 대시보드 (Admin/User 공통) --- */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-[1px] bg-[#e0e0e0] border border-[#e0e0e0] mb-8 shadow-sm">
+            <div className="bg-white p-6">
+                <p className="text-[11px] font-bold text-[#525252] uppercase mb-2 tracking-widest">Total Leads</p>
+                <p className="text-4xl font-light">{leads.length}</p>
+            </div>
+            {isAdmin && (
+                <div className="bg-white p-6">
+                    <p className="text-[11px] font-bold text-[#525252] uppercase mb-2 tracking-widest text-[#fa4d56]">Unassigned</p>
+                    <p className="text-4xl font-light text-[#fa4d56]">{leads.filter(l => !l.client_id).length}</p>
+                </div>
+            )}
+            <div className="bg-white p-6">
+                <p className="text-[11px] font-bold text-[#525252] uppercase mb-2 tracking-widest text-[#0f62fe]">In Progress</p>
+                <p className="text-4xl font-light text-[#0f62fe]">{leads.filter(l => l.status === '상담중').length}</p>
+            </div>
+            <div className="bg-white p-6">
+                <p className="text-[11px] font-bold text-[#525252] uppercase mb-2 tracking-widest text-[#198038]">Closed/Won</p>
+                <p className="text-4xl font-light text-[#198038]">{leads.filter(l => l.status === '계약완료').length}</p>
+            </div>
+            {!isAdmin && (
+                <div className="bg-white p-6">
+                    <p className="text-[11px] font-bold text-[#525252] uppercase mb-2 tracking-widest">Today New</p>
+                    <p className="text-4xl font-light text-slate-400">{leads.filter(l => new Date(l.created_at).toDateString() === new Date().toDateString()).length}</p>
+                </div>
+            )}
+        </div>
+
+        {/* --- Admin 전용: 리드 직접 등록 --- */}
         {isAdmin && (
-          <div className="bg-white p-8 mb-8 border border-[#e0e0e0]">
-            <h2 className="text-xs font-bold text-[#0f62fe] mb-6 uppercase">➕ Register New Lead</h2>
+          <div className="bg-white p-8 mb-8 border border-[#e0e0e0] shadow-sm">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-[#0f62fe] mb-6">➕ Create New Lead (Manual)</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              <input value={newName} onChange={e => setNewName(e.target.value)} className="bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="Name" />
-              <input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="Phone" />
-              <input value={newMemo} onChange={e => setNewMemo(e.target.value)} className="bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none" placeholder="Memo" />
-              <button onClick={handleAddLead} className="bg-[#0f62fe] text-white p-2.5 text-sm font-bold">Register</button>
+              <div>
+                <label className="text-[11px] text-[#525252] block mb-2 font-bold">NAME</label>
+                <input value={newName} onChange={e => setNewName(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none focus:border-[#0f62fe]" placeholder="홍길동" />
+              </div>
+              <div>
+                <label className="text-[11px] text-[#525252] block mb-2 font-bold">PHONE</label>
+                <input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none focus:border-[#0f62fe]" placeholder="010-0000-0000" />
+              </div>
+              <div>
+                <label className="text-[11px] text-[#525252] block mb-2 font-bold">MEMO</label>
+                <input value={newMemo} onChange={e => setNewMemo(e.target.value)} className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-2 text-sm outline-none focus:border-[#0f62fe]" placeholder="상세 내용" />
+              </div>
+              <button onClick={handleAddLead} className="bg-[#0f62fe] text-white p-2.5 text-sm font-bold hover:bg-[#0353e9] transition shadow-md">Register</button>
             </div>
           </div>
         )}
 
-        <div className="space-y-[1px] bg-[#e0e0e0] border border-[#e0e0e0]">
+        {/* --- 리드 리스트 --- */}
+        <div className="space-y-[1px] bg-[#e0e0e0] border border-[#e0e0e0] shadow-sm">
           {leads.map((lead) => (
-            <div key={lead.id} className="bg-white p-0 flex flex-col md:flex-row border-l-4 border-[#0f62fe]">
+            <div key={lead.id} className="bg-white p-0 flex flex-col md:flex-row hover:bg-[#fbfbfb] transition border-l-4 border-[#0f62fe]">
               <div className="flex-1 p-6 border-r border-[#e0e0e0]">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className={`text-[10px] px-2 py-0.5 font-bold uppercase ${lead.client_id ? 'bg-[#e5f6ff] text-[#0043ce]' : 'bg-[#fff1f1] text-[#a2191f]'}`}>{lead.status}</span>
-                  <h3 className="text-xl font-light">{lead.customer_name} | {lead.phone_number}</h3>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className={`text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest ${lead.client_id ? 'bg-[#e5f6ff] text-[#0043ce]' : 'bg-[#fff1f1] text-[#a2191f]'}`}>{lead.status}</span>
+                  <h3 className="text-2xl font-light">{lead.customer_name}</h3>
+                  <span className="text-lg text-[#525252]">{lead.phone_number}</span>
+                  <span className="text-[10px] text-slate-300 ml-auto">인입: {new Date(lead.created_at).toLocaleString('ko-KR')}</span>
                 </div>
-                <div className="space-y-1">
-                  {lead.lead_logs?.map((log: any) => (
-                    <div key={log.id} className="text-xs flex gap-3 py-1 border-b border-[#f4f4f4]">
-                      <span className="font-bold text-[#0f62fe]">[{log.status}]</span>
-                      <span className="text-[#525252]">{log.memo}</span>
-                    </div>
-                  ))}
+                
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold text-[#8d8d8d] uppercase tracking-[0.2em] border-b border-[#f4f4f4] pb-2">Consultation Journal</p>
+                  <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+                    {lead.lead_logs?.map((log: any) => (
+                      <div key={log.id} className="text-xs flex flex-col p-3 bg-[#f4f4f4] border-l-2 border-[#8d8d8d]">
+                        <div className="flex justify-between mb-1">
+                            <span className="font-bold text-[#0f62fe]">[{log.status}]</span>
+                            <span className="text-[10px] text-[#a8a8a8]">{new Date(log.created_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <span className="text-[#161616] leading-relaxed">{log.memo}</span>
+                      </div>
+                    ))}
+                    {(!lead.lead_logs || lead.lead_logs.length === 0) && (
+                        <p className="text-xs text-slate-300 italic">기록된 상담 내역이 없습니다.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="w-full md:w-[300px] bg-[#fbfbfb] p-6 flex flex-col justify-center">
+              {/* 액션 사이드바 */}
+              <div className="w-full md:w-[320px] bg-[#fbfbfb] p-6 border-l border-[#e0e0e0] flex flex-col justify-center">
                 {isAdmin ? (
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-bold text-[#525252] uppercase">Control</p>
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-bold text-[#525252] uppercase tracking-wider">Lead Assignment</p>
                     <select 
-                      className="w-full bg-white border border-[#8d8d8d] p-2 text-sm outline-none"
+                      className="w-full bg-white border border-[#8d8d8d] p-2.5 text-sm outline-none focus:border-[#0f62fe]"
                       onChange={(e) => setSelectedClientId({ ...selectedClientId, [lead.id]: e.target.value })}
                       value={selectedClientId[lead.id] || ''}
                     >
-                      <option value="">Select Client</option>
+                      <option value="">Select Target Client</option>
                       {clients.map(c => <option key={c.id} value={c.id}>{c.client_name}</option>)}
                     </select>
-                    <button onClick={() => assignLead(lead.id)} className="w-full bg-[#161616] text-white p-2 text-xs font-bold hover:bg-black transition">Confirm</button>
-                    {/* 삭제 버튼 추가 */}
+                    <button onClick={() => assignLead(lead.id)} className="w-full bg-[#161616] text-white p-2.5 text-xs font-bold hover:bg-black transition shadow-sm">Confirm Assignment</button>
                     <button 
                       onClick={() => deleteLead(lead.id)}
                       className="w-full border border-[#fa4d56] text-[#fa4d56] p-2 text-xs font-bold hover:bg-[#fff1f1] transition"
                     >Delete Lead</button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <select id={`st-${lead.id}`} className="w-full bg-white border border-[#8d8d8d] p-2 text-sm outline-none">
-                      <option>상담중</option><option>재통화필요</option><option>방문예약</option><option>계약완료</option><option>실패</option>
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-bold text-[#525252] uppercase tracking-wider">Update Journal</p>
+                    <select id={`st-${lead.id}`} className="w-full bg-white border border-[#8d8d8d] p-2.5 text-sm outline-none focus:border-[#0f62fe]">
+                      <option>상담중</option><option>재통화필요</option><option>부재중</option><option>방문예약</option><option>계약완료</option><option>실패(종료)</option>
                     </select>
-                    <textarea id={`mm-${lead.id}`} className="w-full bg-white border border-[#8d8d8d] p-2 text-xs h-16 outline-none resize-none" placeholder="Notes..." />
+                    <textarea id={`mm-${lead.id}`} className="w-full bg-white border border-[#8d8d8d] p-2.5 text-xs h-24 outline-none resize-none focus:border-[#0f62fe]" placeholder="상담 내용을 입력하세요..." />
                     <button 
                       onClick={() => {
                         const s = (document.getElementById(`st-${lead.id}`) as any).value
@@ -157,8 +214,8 @@ export default function LeadManagementSystem() {
                         addLog(lead.id, s, m);
                         (document.getElementById(`mm-${lead.id}`) as any).value = ''
                       }}
-                      className="w-full bg-[#0f62fe] text-white p-2 text-sm font-bold"
-                    >Save</button>
+                      className="w-full bg-[#0f62fe] text-white p-2.5 text-sm font-bold hover:bg-[#0353e9] transition shadow-md"
+                    >Save Record</button>
                   </div>
                 )}
               </div>
