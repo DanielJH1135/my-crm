@@ -76,7 +76,7 @@ export default function LeadManagementSystem() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f4f4f4]">
         <div className="bg-white p-10 w-full max-w-md border-t-4 border-[#0f62fe] shadow-sm">
-          <h1 className="text-2xl font-light mb-8 italic">IBM <span className="font-bold">CRM Login</span></h1>
+          <h1 className="text-2xl font-light mb-8 italic">Leads Management<span className="font-bold">CRM Login</span></h1>
           <input className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-3 mb-4 outline-none" placeholder="ID" onChange={e => setLoginId(e.target.value)} />
           <input className="w-full bg-[#f4f4f4] border-b border-[#8d8d8d] p-3 mb-8 outline-none" type="password" placeholder="PW" onChange={e => setPassword(e.target.value)} />
           <button className="w-full bg-[#0f62fe] text-white p-4 font-bold" onClick={handleLogin}>Log in</button>
@@ -88,7 +88,7 @@ export default function LeadManagementSystem() {
   return (
     <div className="min-h-screen bg-[#f4f4f4] text-[#161616]">
       <header className="h-12 bg-[#161616] text-white flex items-center justify-between px-6 sticky top-0 z-50">
-        <span className="font-bold tracking-tighter">IBM CRM</span>
+        <span className="font-bold tracking-tighter"> Noname Lead Management System</span>
         <button onClick={() => setUser(null)} className="text-xs text-[#c6c6c6]">Logout</button>
       </header>
 
